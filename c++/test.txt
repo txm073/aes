@@ -1,0 +1,2 @@
+Hello this is a file that I am going to encrypt in C++
+I am going to try and call the aes::encryptFile function from Python using the ctypes library
