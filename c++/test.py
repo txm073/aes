@@ -3,6 +3,10 @@ from ctypes import *
 import os
 
 path = str(pathlib.Path().absolute() / "lib.so")
+try:
+    os.chdir(os.path.dirname(path))
+except OSError:
+    pass
 if not os.path.exists(path):
     os.system("g++ -shared -o lib.so aes128.cpp")
 lib = WinDLL(path)

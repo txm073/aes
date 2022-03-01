@@ -6,10 +6,21 @@ from .utils import *
 from .cipher import *
 from .derive import *
 
-__dir__ = lambda: ["encrypt", "decrypt"]
+__dir__ = lambda: ["encrypt", "decrypt", "encrypt_file", "decrypt_file"]
+
+
+class Error(Exception):
+    pass
+
+
+def _assert(stmt, msg, code=0, err=Error):    
+    code = f"[{code}]:" if code else ""
+    if not stmt:
+        raise err(code + msg)
 
 def encrypt(data, password=None, output_mode="hex", rlevel=0):
-    assert data, "Provide some data"
+    """ Encrypt string data using the AES-128 bit algorithm """
+    _assert(data, "Provide some data to encrypt")
     dtype = type(data).__name__
     padding = 16 - len(data) % 16
     enc = ""
@@ -42,7 +53,8 @@ def encrypt(data, password=None, output_mode="hex", rlevel=0):
     return output
   
 def decrypt(data, password=None, key=None, input_mode="hex", rlevel=0):
-    assert bool(password) ^ bool(key), "Provide either a password or a 128-bit encryption key"
+    """ Decrypt a string that has been encrypted with AES-128 """
+    _assert(bool(password) ^ bool(key), "Provide either a password or a 128-bit encryption key")
 
     if input_mode == "base64":
         data = base64.b64decode(data.encode()).decode()
@@ -71,7 +83,7 @@ def decrypt(data, password=None, key=None, input_mode="hex", rlevel=0):
         password_enc = headers[4:]
         if not rlevel:
             decrypted_header = decrypt(data=password_enc, password=password, rlevel=1)
-            assert decrypted_header == password, "Invalid decryption password"    
+            _assert(decrypted_header == password, "Invalid decryption password")    
 
     for block in get_blocks(data if not rlevel else data[2:]):
         block = create_matrix(block)
@@ -87,6 +99,7 @@ def decrypt(data, password=None, key=None, input_mode="hex", rlevel=0):
     return output
 
 def encrypt_file(file, password, line_length=80):
+    """ Encrypt a file with AES-128 encryption """
     with open(file, "rb") as f:
         data = f.read()
     enc = encrypt(data, password=password, output_mode="base64-bytes")
@@ -99,6 +112,7 @@ def encrypt_file(file, password, line_length=80):
                 f.write(enc[i:] + b"\n")
 
 def decrypt_file(file, password):
+    """ Decrypt a file with AES-128 encryption """
     with open(file, "rb") as f:
         enc = b"".join(f.readlines())
     data = decrypt(enc, password=password, input_mode="base64-bytes")

@@ -49,3 +49,7 @@ MIXCOLS_INV = np.array([
     [13, 9, 14, 11],
     [11, 13, 9, 14]
 ])
+
+
+class MixColumnsTable:
+    TABLE = None
